@@ -1,0 +1,84 @@
+---
+title: "Case Study 0"
+format: 
+  html:
+    toc: true
+editor: visual
+---
+
+```{r}
+#| label: load-packages-data
+#| message: false
+
+library(tidyverse)
+library(scales)
+library(knitr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+
+
+```{r}
+# Read the CSV file into a dataframe
+surgery_df <- read.csv("surgery_times.csv")
+
+# View the first few rows of the dataframe
+head(surgery_df)
+
+```
+
+```{r}
+# Assuming your dataframe is named 'surgery_df'
+surgery_df$recalibrated_time_hour <- ifelse(surgery_df$hour >= 18.00 & surgery_df$hour <= 23.99, surgery_df$hour - 18.00,
+                                       ifelse(surgery_df$hour >= 0.00 & surgery_df$hour < 6.00, surgery_df$hour + 6.00,
+                                              ifelse(surgery_df$hour >= 6.00 & surgery_df$hour < 12.00, surgery_df$hour - 6.00, surgery_df$hour)))
+
+
+surgery_df$recalibrated_time_minutes <- (surgery_df$recalibrated_time_hour * 60)
+
+# View the updated dataframe
+head(surgery_df)
+
+
+mean(surgery_df$recalibrated_time_hour)
+
+```
+
+```{r}
+# Fit a logistic regression model
+model <- glm(complication == "Yes" ~ hospital + age + dow, data = surgery_df, family = binomial)
+
+# Summarize the model
+summary(model)
+
+```
+
+
+```{r}
+hospital_counts <- count(surgery_df, hospital)
+
+hospital_counts
+```
+
+
+
+
+
+
+```{r}
+p <- ggplot(surgery_df, aes(x = recalibrated_time_hour, fill = hospital)) +
+  geom_histogram(binwidth = .2, alpha = 0.5, position = "identity") +
+  labs(title = "Histogram of Arrival Count", subtitle = "(binwidth = 0.2 hours)", x = "# Hours past 6PM", y = "Count") +
+  theme_minimal()
+
+
+p
+```
+
+
+
+
+
+
