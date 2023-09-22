@@ -91,7 +91,7 @@ t.test(hospital_A_surgery$recalibrated_time_minutes, hospital_B_surgery$recalibr
 ```
 
 ```{r}
-Model_with_random_effects <- glmer(complication == "Yes" ~ age + recalibrated_time_minutes + (1 | hospital), data = surgery_df, family = binomial)
+Model_with_random_effects <- glmer(complication == "Yes" ~ age + dow + (1 | hospital), data = surgery_df, family = binomial)
 
 summary(Model_with_random_effects)
 ```
