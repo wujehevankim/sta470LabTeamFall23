@@ -78,6 +78,24 @@ p
 ```
 
 
+```{r}
+
+hospital_A_surgery <- surgery_df[surgery_df$hospital == "A", ]
+hospital_B_surgery <- surgery_df[surgery_df$hospital == "B", ]
+
+```
+
+```{r}
+t.test(hospital_A_surgery$recalibrated_time_minutes, hospital_B_surgery$recalibrated_time_minutes, var.equal=FALSE)
+```
+
+```{r}
+Model_with_random_effects <- glmer(complication == "Yes" ~ age + recalibrated_time_minutes + (1 | hospital), data = surgery_df, family = binomial)
+
+summary(Model_with_random_effects)
+```
+
+
 
 
 
