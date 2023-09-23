@@ -86,14 +86,22 @@ hospital_B_surgery <- surgery_df[surgery_df$hospital == "B", ]
 
 ```
 
-```{r}
-t.test(hospital_A_surgery$recalibrated_time_minutes, hospital_B_surgery$recalibrated_time_minutes, var.equal=FALSE)
+
+
+```{r, warning = FALSE}
+
+
+surgery_df$age <- as.numeric(surgery_df$age)
+str(surgery_df)
+
+ggpairs(surgery_df[, c("age", "recalibrated_time_hour", "dow")])
 ```
 
 ```{r}
-Model_with_random_effects <- glmer(complication == "Yes" ~ age + dow + (1 | hospital), data = surgery_df, family = binomial)
+Model_with_random_effects <- glmer(complication == "Yes" ~ age + recalibrated_time_hour + dow + (1 | hospital), data = surgery_df, family = binomial)
 
-summary(Model_with_random_effects)
+summary(Model_with_random_effects)$coef
+
 ```
 
 
