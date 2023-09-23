@@ -1,0 +1,118 @@
+---
+title: "Elyse"
+author: "Elyse McFalls"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(tidyr)
+library(ggplot2)
+library(ISLR)
+library(splines)
+library(stats)
+```
+
+
+
+## Import dataset
+```{r}
+library(readr)
+surgery_times <- read_csv("surgery_times.csv")
+```
+
+
+## Data transformation
+```{r}
+# Assuming your dataframe is named 'surgery_df'
+surgery_times$recalibrated_time_hour <- ifelse(surgery_times$hour >= 18.00 & surgery_times$hour <= 23.99, surgery_times$hour - 18.00,
+                                       ifelse(surgery_times$hour >= 0.00 & surgery_times$hour < 6.00, surgery_times$hour + 6.00,
+                                              ifelse(surgery_times$hour >= 6.00 & surgery_times$hour < 12.00, surgery_times$hour - 6.00, surgery_times$hour)))
+
+
+surgery_times$recalibrated_time_minutes <- (surgery_times$recalibrated_time_hour * 60)
+
+# View the updated dataframe
+head(surgery_times)
+
+```
+
+
+```{r}
+surgery_times <- surgery_times %>%
+  group_by(dow, hospital)%>%
+  mutate(total_encounters = cumsum(encounter))
+```
+
+
+## EDA
+
+
+```{r}
+ggplot(surgery_times, aes(x=recalibrated_time_hour)) +
+  geom_density()+
+  labs(y = "Proportion of encounters", x = "# Hours past 6PM", title = "Distribution of Enounters over Time ")
+```
+
+```{r}
+ggplot(surgery_times, aes(x=recalibrated_time_hour, color = hospital)) +
+  geom_density()+
+  labs(y = "Proportion of encounters", x = "# Hours past 6PM", title = "Distribution of Enounters over Time by Hospital")
+```
+
+```{r}
+ggplot(surgery_times, aes(x=recalibrated_time_hour, color = as.factor(complication))) +
+  geom_density()+
+  labs(y = "Proportion of encounters", x = "# Hours past 6PM", title = "Distribution of Enounters over Time by Hospital")
+```
+
+```{r}
+ggplot(surgery_times, aes(x=recalibrated_time_hour, color = dow)) +
+  geom_density()+
+  labs(y = "proportion of encounters")
+```
+
+```{r}
+ggplot(surgery_times, aes(x=recalibrated_time_hour, y = age, color=hospital)) +
+  geom_point()+
+  labs(y = "age")
+```
+
+```{r}
+ggplot(surgery_times, aes(x=hospital, fill=as.factor(complication))) +
+  geom_bar(position="fill")+
+  labs(fill = "Complication", y = "Proportion", x = "Hospital", title = "Complications by Hospital")
+```
+
+
+
+
+
+## WRST
+
+### Hospital
+```{r}
+# Extract times of encounters for each hospital
+hospital_A_times <- surgery_times$recalibrated_time_hour[surgery_times$hospital == "A"]
+hospital_B_times <- surgery_times$recalibrated_time_hour[surgery_times$hospital == "B"]
+
+# Perform the Mann-Whitney U test (also known as Wilcoxon rank sum test in R)
+test_result <- wilcox.test(hospital_A_times, hospital_B_times)
+
+# Print the result
+print(test_result)
+
+```
+
+```{r}
+mode(as.numeric(surgery_times$recalibrated_time_hour))
+```
+
